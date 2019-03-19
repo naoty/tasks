@@ -1,5 +1,11 @@
 <template>
   <v-app>
-    <nuxt/>
+    <v-toolbar>
+      <v-toolbar-side-icon></v-toolbar-side-icon>
+      <v-toolbar-title>Tasks</v-toolbar-title>
+    </v-toolbar>
+    <v-content>
+      <nuxt/>
+    </v-content>
   </v-app>
 </template>
