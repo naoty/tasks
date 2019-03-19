@@ -1,0 +1,7 @@
+{
+  "name": "tasks",
+  "private": true,
+  "dependencies": {
+    "nuxt": "^2.4.5"
+  }
+}
