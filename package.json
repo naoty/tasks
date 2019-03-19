@@ -2,6 +2,7 @@
   "name": "tasks",
   "private": true,
   "dependencies": {
+    "@nuxtjs/vuetify": "^0.5.5",
     "nuxt": "^2.4.5"
   }
 }

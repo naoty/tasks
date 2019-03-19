@@ -5,5 +5,8 @@ export default {
       { name: "viewport", content: "width=device-width, initial-scale=1" }
     ],
     title: "Tasks"
-  }
+  },
+  modules: [
+    "@nuxtjs/vuetify"
+  ]
 }
