@@ -5,13 +5,9 @@
         <h1>{{ status.name }}</h1>
         <v-divider></v-divider>
         <v-layout column mt-2>
-          <draggable group="status.id">
-            <v-flex v-for="(task, taskId) in tasksWithStatus(status)" :key="taskId" mb-2>
-              <v-card>
-                <v-card-title>
-                  <h2>{{ task.title }}</h2>
-                </v-card-title>
-              </v-card>
+          <draggable group="status" @end="handleDragEnd" :data-status-id="statusId">
+            <v-flex v-for="taskId in status.tasks" :key="taskId" mb-2>
+              <task-card :taskId="taskId"></task-card>
             </v-flex>
           </draggable>
         </v-layout>
@@ -22,14 +18,21 @@
 
 <script>
 import draggable from "vuedraggable";
+import TaskCard from "../components/TaskCard";
 
 export default {
   components: {
-    draggable
+    draggable,
+    "task-card": TaskCard
   },
   methods: {
-    tasksWithStatus: function(status) {
-      return status.tasks.map(taskId => this.$store.state.tasks[taskId]);
+    handleDragEnd: function(event) {
+      this.$store.commit("moveTask", {
+        oldStatusId: event.from.dataset.statusId,
+        oldIndex: event.oldIndex,
+        newStatusId: event.to.dataset.statusId,
+        newIndex: event.newIndex
+      });
     }
   }
 };

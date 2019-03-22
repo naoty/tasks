@@ -14,6 +14,16 @@ export default function () {
         "3": { id: "3", title: "Task 3" },
         "4": { id: "4", title: "Task 4" }
       }
-    })
+    }),
+    mutations: {
+      moveTask: function (state, { oldStatusId, oldIndex, newStatusId, newIndex }) {
+        const oldStatus = state.statuses[oldStatusId];
+        const taskId = oldStatus.tasks[oldIndex];
+        oldStatus.tasks.splice(oldIndex, 1);
+
+        const newStatus = state.statuses[newStatusId];
+        newStatus.tasks.splice(newIndex, 0, taskId);
+      }
+    }
   });
 }
