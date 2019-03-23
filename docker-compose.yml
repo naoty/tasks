@@ -1,12 +1,11 @@
 version: "3"
 services:
-  nuxt:
-    build: .
-    image: tasks
+  frontend:
+    build: ./frontend
     command: ["npx", "nuxt"]
     environment:
       NUXT_HOST: 0.0.0.0
     ports:
       - 3000:3000
     volumes:
-      - .:/tasks
+      - ./frontend:/tasks
