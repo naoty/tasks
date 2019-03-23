@@ -2,7 +2,8 @@ version: "3"
 services:
   backend:
     build: ./backend
-    command: ["bash"]
+    ports:
+      - 1323:1323
     volumes:
       - ./backend:/tasks
   frontend:
