@@ -1,5 +1,10 @@
 version: "3"
 services:
+  backend:
+    build: ./backend
+    command: ["bash"]
+    volumes:
+      - ./backend:/tasks
   frontend:
     build: ./frontend
     command: ["npx", "nuxt"]
