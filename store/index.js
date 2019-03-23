@@ -15,7 +15,11 @@ export default function () {
     }),
     mutations: {
       addTask(state, { title }) {
-        state.tasks[state.nextTaskId] = { id: state.nextTaskId, title };
+        state.tasks[state.nextTaskId] = {
+          id: state.nextTaskId,
+          title,
+          status: state.initialTaskStatusId
+        };
         state.statuses[state.initialTaskStatusId].tasks.push(state.nextTaskId);
         state.nextTaskId = String(Number(state.nextTaskId) + 1);
       },
@@ -24,8 +28,18 @@ export default function () {
         const taskId = oldStatus.tasks[oldIndex];
         oldStatus.tasks.splice(oldIndex, 1);
 
+        const task = state.tasks[taskId];
+        task.status = newStatusId;
+
         const newStatus = state.statuses[newStatusId];
         newStatus.tasks.splice(newIndex, 0, taskId);
+      },
+      removeTask(state, { taskId }) {
+        const task = state.tasks[taskId];
+        const status = state.statuses[task.status];
+        status.tasks.splice(status.tasks.indexOf(taskId), 1);
+
+        delete state.tasks[taskId];
       }
     }
   });
