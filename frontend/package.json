@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@nuxtjs/vuetify": "^0.5.5",
+    "axios": "^0.18.0",
     "nuxt": "^2.4.5",
     "vuedraggable": "^2.19.3"
   }
