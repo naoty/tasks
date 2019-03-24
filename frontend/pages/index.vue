@@ -6,7 +6,7 @@
         <v-divider></v-divider>
         <v-layout column mt-2>
           <draggable group="status" @end="handleDragEnd" :data-status-id="statusId">
-            <v-flex v-for="taskId in status.tasks" :key="taskId" mb-2>
+            <v-flex v-for="taskId in status.taskIds" :key="taskId" mb-2>
               <task-card :taskId="taskId"></task-card>
             </v-flex>
           </draggable>
@@ -30,7 +30,11 @@ export default {
     const host = process.client ? env.clientBackendHost : env.serverBackendHost;
     const url = `http://${host}:${env.backendPort}/statuses`;
     const { data } = await axios.get(url);
-    store.commit("setStatuses", { statuses: data });
+    const statuses = data.reduce((result, status) => {
+      result[status.id] = status;
+      return result;
+    }, {});
+    store.commit("setStatuses", { statuses });
   },
   methods: {
     handleDragEnd: function(event) {
