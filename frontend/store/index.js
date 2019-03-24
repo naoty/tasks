@@ -4,9 +4,6 @@ export default function () {
   return new Vuex.Store({
     state: () => ({
       statuses: {
-        "1": { id: "1", name: "TODO", tasks: [] },
-        "2": { id: "2", name: "DOING", tasks: [] },
-        "3": { id: "3", name: "DONE", tasks: [] }
       },
       tasks: {
       },
@@ -40,6 +37,9 @@ export default function () {
         status.tasks.splice(status.tasks.indexOf(taskId), 1);
 
         delete state.tasks[taskId];
+      },
+      setStatuses(state, { statuses }) {
+        state.statuses = statuses;
       }
     }
   });

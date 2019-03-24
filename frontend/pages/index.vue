@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import draggable from "vuedraggable";
 import TaskCard from "../components/TaskCard";
 
@@ -24,6 +25,12 @@ export default {
   components: {
     draggable,
     "task-card": TaskCard
+  },
+  async fetch({ env, store }) {
+    const host = process.client ? env.clientBackendHost : env.serverBackendHost;
+    const url = `http://${host}:${env.backendPort}/statuses`;
+    const { data } = await axios.get(url);
+    store.commit("setStatuses", { statuses: data });
   },
   methods: {
     handleDragEnd: function(event) {
