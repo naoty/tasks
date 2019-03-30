@@ -5,10 +5,16 @@ services:
       context: ./backend
       target: builder
     command: ["fresh"]
+    depends_on:
+      - database
     ports:
       - 1323:1323
     volumes:
       - ./backend:/tasks
+  database:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
   frontend:
     build: ./frontend
     command: ["npx", "nuxt"]
