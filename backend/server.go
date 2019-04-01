@@ -25,6 +25,7 @@ func main() {
 	e.Debug = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
+	e.Use(CustomContextMiddleware)
 	e.GET("/statuses", getStatuses)
 	e.Logger.Fatal(e.Start(":1323"))
 }
