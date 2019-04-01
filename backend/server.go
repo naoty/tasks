@@ -22,6 +22,7 @@ var dsn = fmt.Sprintf(
 
 func main() {
 	e := echo.New()
+	e.Debug = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.GET("/statuses", getStatuses)
