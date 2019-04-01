@@ -7,6 +7,11 @@ services:
     command: ["fresh"]
     depends_on:
       - database
+    environment:
+      DATABASE_HOST: database
+      DATABASE_NAME: tasks_development
+      DATABASE_PASSWORD: password
+      DATABASE_USER: root
     ports:
       - 1323:1323
     volumes:
