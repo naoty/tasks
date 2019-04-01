@@ -2,36 +2,36 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 	"net/http"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/naoty/tasks/backend/model"
 )
 
-var dsn = fmt.Sprintf(
-	"%s:%s@tcp(%s:3306)/%s",
-	os.Getenv("DATABASE_USER"),
-	os.Getenv("DATABASE_PASSWORD"),
-	os.Getenv("DATABASE_HOST"),
-	os.Getenv("DATABASE_NAME"),
-)
-
 func main() {
+	var config Config
+	err := envconfig.Process("", &config)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	e := echo.New()
-	e.Debug = true
+	e.Debug = config.Debug
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.Use(CustomContextMiddleware)
+	e.Use(ConfigMiddleware(config))
 	e.GET("/statuses", getStatuses)
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
 func getStatuses(c echo.Context) error {
-	db, err := sql.Open("mysql", dsn)
+	cc := c.(*CustomContext)
+	db, err := sql.Open("mysql", cc.GetDSN())
 	if err != nil {
 		return err
 	}

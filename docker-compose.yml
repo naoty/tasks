@@ -12,6 +12,7 @@ services:
       DATABASE_NAME: tasks_development
       DATABASE_PASSWORD: password
       DATABASE_USER: root
+      DEBUG: "true"
     ports:
       - 1323:1323
     volumes:
