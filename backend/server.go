@@ -31,18 +31,25 @@ func main() {
 func getStatuses(c echo.Context) error {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to connect db")
+		return err
 	}
 	defer db.Close()
 
-	if err = db.Ping(); err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("error: %v", err))
+	rows, err := db.Query("SELECT * FROM statuses")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	statuses := []model.Status{}
+	for rows.Next() {
+		status := model.Status{TaskIDs: []string{}}
+		err := rows.Scan(&status.StatusID, &status.Name)
+		if err != nil {
+			return err
+		}
+		statuses = append(statuses, status)
 	}
 
-	statuses := []*model.Status{
-		&model.Status{ID: "1", Name: "TODO", TaskIDs: []string{}},
-		&model.Status{ID: "2", Name: "DOING", TaskIDs: []string{}},
-		&model.Status{ID: "3", Name: "DONE", TaskIDs: []string{}},
-	}
 	return c.JSON(http.StatusOK, statuses)
 }
