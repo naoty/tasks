@@ -25,19 +25,28 @@ func main() {
 	e.Use(middleware.CORS())
 	e.Use(CustomContextMiddleware)
 	e.Use(ConfigMiddleware(config))
+	e.Use(databaseMiddleware)
 	e.GET("/statuses", getStatuses)
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
+func databaseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cc := c.(*CustomContext)
+		db, err := sql.Open("mysql", cc.GetDSN())
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+
+		cc.DB = db
+		return next(cc)
+	}
+}
+
 func getStatuses(c echo.Context) error {
 	cc := c.(*CustomContext)
-	db, err := sql.Open("mysql", cc.GetDSN())
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM statuses")
+	rows, err := cc.Query("SELECT * FROM statuses")
 	if err != nil {
 		return err
 	}

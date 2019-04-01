@@ -1,11 +1,16 @@
 package main
 
-import "github.com/labstack/echo"
+import (
+	"database/sql"
+
+	"github.com/labstack/echo"
+)
 
 // CustomContext is the extension of echo.Context.
 type CustomContext struct {
 	echo.Context
 	Config
+	*sql.DB
 }
 
 // CustomContextMiddleware is a middleware to extend echo.Context.
