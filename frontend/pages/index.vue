@@ -31,7 +31,7 @@ export default {
     const url = `http://${host}:${env.backendPort}/statuses`;
     const { data } = await axios.get(url);
     const statuses = data.reduce((result, status) => {
-      result[status.id] = status;
+      result[status.statusId] = status;
       return result;
     }, {});
     store.commit("setStatuses", { statuses });
