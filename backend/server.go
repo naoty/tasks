@@ -28,7 +28,6 @@ func main() {
 	e.Use(databaseMiddleware)
 
 	e.GET("/statuses", getStatuses)
-	e.GET("/tasks", getTasks)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
@@ -49,42 +48,44 @@ func databaseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func getStatuses(c echo.Context) error {
 	cc := c.(*CustomContext)
-	rows, err := cc.Query("SELECT * FROM statuses")
+	rows, err := cc.Query("SELECT * FROM statuses LEFT OUTER JOIN tasks USING (status_id)")
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
-	statuses := []model.Status{}
+	type result struct {
+		statusID string
+		name     string
+		taskID   sql.NullString
+		title    sql.NullString
+	}
+
+	statusMap := map[string]model.Status{}
 	for rows.Next() {
-		status := model.Status{TaskIDs: []string{}}
-		err := rows.Scan(&status.StatusID, &status.Name)
+		var result result
+		err := rows.Scan(&result.statusID, &result.name, &result.taskID, &result.title)
 		if err != nil {
 			return err
 		}
+
+		status, ok := statusMap[result.statusID]
+		if !ok {
+			status = model.Status{StatusID: result.statusID, Name: result.name, Tasks: []model.Task{}}
+		}
+
+		if result.taskID.Valid {
+			task := model.Task{TaskID: result.taskID.String, Title: result.title.String, StatusID: result.statusID}
+			status.Tasks = append(status.Tasks, task)
+		}
+
+		statusMap[result.statusID] = status
+	}
+
+	statuses := []model.Status{}
+	for _, status := range statusMap {
 		statuses = append(statuses, status)
 	}
 
 	return c.JSON(http.StatusOK, statuses)
-}
-
-func getTasks(c echo.Context) error {
-	cc := c.(*CustomContext)
-	rows, err := cc.Query("SELECT * FROM tasks")
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	tasks := []model.Task{}
-	for rows.Next() {
-		task := model.Task{}
-		err := rows.Scan(&task.TaskID, &task.Title, &task.StatusID)
-		if err != nil {
-			return err
-		}
-		tasks = append(tasks, task)
-	}
-
-	return c.JSON(http.StatusOK, tasks)
 }
