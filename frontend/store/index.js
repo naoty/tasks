@@ -17,29 +17,30 @@ export default function () {
           title,
           status: state.initialTaskStatusId
         };
-        state.statuses[state.initialTaskStatusId].taskIds.push(state.nextTaskId);
+        state.statuses[state.initialTaskStatusId].tasks.push(state.nextTaskId);
         state.nextTaskId = String(Number(state.nextTaskId) + 1);
       },
       moveTask(state, { oldStatusId, oldIndex, newStatusId, newIndex }) {
         const oldStatus = state.statuses[oldStatusId];
-        const taskId = oldStatus.taskIds[oldIndex];
-        oldStatus.taskIds.splice(oldIndex, 1);
+        const taskId = oldStatus.tasks[oldIndex];
+        oldStatus.tasks.splice(oldIndex, 1);
 
         const task = state.tasks[taskId];
-        task.status = newStatusId;
+        task.statusId = newStatusId;
 
         const newStatus = state.statuses[newStatusId];
-        newStatus.taskIds.splice(newIndex, 0, taskId);
+        newStatus.tasks.splice(newIndex, 0, taskId);
       },
       removeTask(state, { taskId }) {
         const task = state.tasks[taskId];
-        const status = state.statuses[task.status];
-        status.taskIds.splice(status.taskIds.indexOf(taskId), 1);
+        const status = state.statuses[task.statusId];
+        status.tasks.splice(status.tasks.indexOf(taskId), 1);
 
         delete state.tasks[taskId];
       },
-      setStatuses(state, { statuses }) {
+      setStatusesAndTasks(state, { statuses, tasks }) {
         state.statuses = statuses;
+        state.tasks = tasks;
       }
     }
   });

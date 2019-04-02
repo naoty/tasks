@@ -6,7 +6,7 @@
         <v-divider></v-divider>
         <v-layout column mt-2>
           <draggable group="status" @end="handleDragEnd" :data-status-id="statusId">
-            <v-flex v-for="taskId in status.taskIds" :key="taskId" mb-2>
+            <v-flex v-for="taskId in status.tasks" :key="taskId" mb-2>
               <task-card :taskId="taskId"></task-card>
             </v-flex>
           </draggable>
@@ -19,7 +19,9 @@
 <script>
 import axios from "axios";
 import draggable from "vuedraggable";
+import { normalize } from "normalizr";
 import TaskCard from "../components/TaskCard";
+import { statusSchema } from "../schema";
 
 export default {
   components: {
@@ -30,11 +32,8 @@ export default {
     const host = process.client ? env.clientBackendHost : env.serverBackendHost;
     const url = `http://${host}:${env.backendPort}/statuses`;
     const { data } = await axios.get(url);
-    const statuses = data.reduce((result, status) => {
-      result[status.statusId] = status;
-      return result;
-    }, {});
-    store.commit("setStatuses", { statuses });
+    const normalizedData = normalize(data, [statusSchema]);
+    store.commit("setStatusesAndTasks", normalizedData.entities);
   },
   methods: {
     handleDragEnd: function(event) {
