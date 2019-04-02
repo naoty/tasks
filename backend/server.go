@@ -26,7 +26,10 @@ func main() {
 	e.Use(CustomContextMiddleware)
 	e.Use(ConfigMiddleware(config))
 	e.Use(databaseMiddleware)
+
 	e.GET("/statuses", getStatuses)
+	e.GET("/tasks", getTasks)
+
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
@@ -63,4 +66,25 @@ func getStatuses(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, statuses)
+}
+
+func getTasks(c echo.Context) error {
+	cc := c.(*CustomContext)
+	rows, err := cc.Query("SELECT * FROM tasks")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	tasks := []model.Task{}
+	for rows.Next() {
+		task := model.Task{}
+		err := rows.Scan(&task.TaskID, &task.Title, &task.StatusID)
+		if err != nil {
+			return err
+		}
+		tasks = append(tasks, task)
+	}
+
+	return c.JSON(http.StatusOK, tasks)
 }
