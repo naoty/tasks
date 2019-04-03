@@ -28,6 +28,7 @@ func main() {
 	e.Use(handler.DatabaseMiddleware)
 
 	e.GET("/statuses", handler.GetStatuses)
+	e.POST("/tasks", handler.PostTasks)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
