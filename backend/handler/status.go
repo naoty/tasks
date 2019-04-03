@@ -11,7 +11,7 @@ import (
 // GetStatuses is a handler for `GET /statuses`.
 func GetStatuses(c echo.Context) error {
 	cc := c.(*CustomContext)
-	rows, err := cc.Query("SELECT * FROM statuses LEFT OUTER JOIN tasks USING (status_id)")
+	rows, err := cc.Query("SELECT * FROM statuses LEFT OUTER JOIN tasks USING (status_id) ORDER BY position ASC")
 	if err != nil {
 		return err
 	}
@@ -20,6 +20,7 @@ func GetStatuses(c echo.Context) error {
 	type result struct {
 		statusID string
 		name     string
+		position int
 		taskID   sql.NullString
 		title    sql.NullString
 	}
@@ -27,14 +28,25 @@ func GetStatuses(c echo.Context) error {
 	statusMap := map[string]model.Status{}
 	for rows.Next() {
 		var result result
-		err := rows.Scan(&result.statusID, &result.name, &result.taskID, &result.title)
+		err := rows.Scan(
+			&result.statusID,
+			&result.name,
+			&result.position,
+			&result.taskID,
+			&result.title,
+		)
 		if err != nil {
 			return err
 		}
 
 		status, ok := statusMap[result.statusID]
 		if !ok {
-			status = model.Status{StatusID: result.statusID, Name: result.name, Tasks: []model.Task{}}
+			status = model.Status{
+				StatusID: result.statusID,
+				Name:     result.name,
+				Position: result.position,
+				Tasks:    []model.Task{},
+			}
 		}
 
 		if result.taskID.Valid {
