@@ -1,3 +1,4 @@
+import axios from "axios";
 import Vuex from "vuex";
 
 export default function () {
@@ -7,18 +8,15 @@ export default function () {
       },
       tasks: {
       },
-      nextTaskId: "1",
-      initialTaskStatusId: "1"
     }),
     mutations: {
-      addTask(state, { title }) {
-        state.tasks[state.nextTaskId] = {
-          id: state.nextTaskId,
+      addTask(state, { taskId, title, statusId }) {
+        state.statuses[statusId].tasks.push(taskId);
+        state.tasks[taskId] = {
+          id: taskId,
           title,
-          status: state.initialTaskStatusId
+          status: statusId
         };
-        state.statuses[state.initialTaskStatusId].tasks.push(state.nextTaskId);
-        state.nextTaskId = String(Number(state.nextTaskId) + 1);
       },
       moveTask(state, { oldStatusId, oldIndex, newStatusId, newIndex }) {
         const oldStatus = state.statuses[oldStatusId];
@@ -39,8 +37,14 @@ export default function () {
         delete state.tasks[taskId];
       },
       setStatusesAndTasks(state, { statuses, tasks }) {
-        state.statuses = statuses;
-        state.tasks = tasks;
+        state.statuses = statuses || {};
+        state.tasks = tasks || {};
+      }
+    },
+    actions: {
+      async addTask({ commit }, task) {
+        const { data } = await axios.post("http://localhost:1323/tasks", { task });
+        commit("addTask", data.task);
       }
     }
   });

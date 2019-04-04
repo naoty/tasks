@@ -22,13 +22,13 @@ export default {
     titleRules: [value => !!value || "Title is required"]
   }),
   methods: {
-    save() {
+    async save() {
       const isValid = this.$refs.form.validate();
       if (!isValid) {
         return;
       }
 
-      this.$store.commit("addTask", { title: this.title });
+      await this.$store.dispatch("addTask", { title: this.title });
       this.canShowDialog = false;
     }
   }
