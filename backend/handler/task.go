@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/naoty/tasks/backend/model"
 )
 
 // PostTasks is a handler for `POST /tasks`.
@@ -39,5 +40,21 @@ func PostTasks(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusCreated)
+	rows, err = cc.Query("SELECT * FROM tasks ORDER BY task_id DESC LIMIT 1")
+	if err != nil {
+		return err
+	}
+
+	rows.Next()
+	var task model.Task
+	err = rows.Scan(&task.TaskID, &task.Title, &task.StatusID)
+	if err != nil {
+		return err
+	}
+
+	type response struct {
+		model.Task `json:"task"`
+	}
+
+	return c.JSON(http.StatusCreated, response{task})
 }
