@@ -22,8 +22,19 @@ func PostTasks(c echo.Context) error {
 	}
 
 	cc := c.(*CustomContext)
-	// TODO: Fetch default status from database
-	_, err := cc.Exec("INSERT INTO tasks (title, status_id) VALUES (?, ?)", body.Task.Title, 1)
+	rows, err := cc.Query("SELECT status_id FROM statuses ORDER BY position ASC LIMIT 1")
+	if err != nil {
+		return err
+	}
+
+	rows.Next()
+	var initialStatusID int
+	err = rows.Scan(&initialStatusID)
+	if err != nil {
+		return err
+	}
+
+	_, err = cc.Exec("INSERT INTO tasks (title, status_id) VALUES (?, ?)", body.Task.Title, initialStatusID)
 	if err != nil {
 		return err
 	}
