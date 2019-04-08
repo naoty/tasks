@@ -22,17 +22,3 @@ services:
     environment:
       LANG: C.UTF-8
       MYSQL_ROOT_PASSWORD: password
-  frontend:
-    build: ./frontend
-    command: ["npx", "nuxt"]
-    depends_on:
-      - backend
-    environment:
-      BACKEND_PORT: 1323
-      CLIENT_BACKEND_HOST: localhost
-      NUXT_HOST: 0.0.0.0
-      SERVER_BACKEND_HOST: backend
-    ports:
-      - 3000:3000
-    volumes:
-      - ./frontend:/tasks
