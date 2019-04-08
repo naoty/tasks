@@ -1,8 +1,10 @@
+const Dotenv = require("dotenv-webpack");
+
 export default {
-  env: {
-    backendPort: process.env.BACKEND_PORT,
-    clientBackendHost: process.env.CLIENT_BACKEND_HOST,
-    serverBackendHost: process.env.SERVER_BACKEND_HOST
+  build: {
+    extend(config, { }) {
+      config.plugins.push(new Dotenv({ safe: true }));
+    }
   },
   head: {
     meta: [

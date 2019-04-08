@@ -43,7 +43,7 @@ export default function () {
     },
     actions: {
       async addTask({ commit }, task) {
-        const { data } = await axios.post("http://localhost:1323/tasks", { task });
+        const { data } = await axios.post(`${process.env.BACKEND_BASE_URL}/tasks`, { task });
         commit("addTask", data.task);
       }
     }

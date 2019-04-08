@@ -29,8 +29,7 @@ export default {
     "task-card": TaskCard
   },
   async fetch({ env, store }) {
-    const host = process.client ? env.clientBackendHost : env.serverBackendHost;
-    const url = `http://${host}:${env.backendPort}/statuses`;
+    const url = `${process.env.BACKEND_BASE_URL}/statuses`;
     const { data } = await axios.get(url);
     const normalizedData = normalize(data, [statusSchema]);
     store.commit("setStatusesAndTasks", normalizedData.entities);
