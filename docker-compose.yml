@@ -16,7 +16,7 @@ services:
     ports:
       - 1323:1323
     volumes:
-      - ./backend:/tasks
+      - ./backend:/tasks/backend
       - ./schema.graphql:/tasks/schema.graphql
   database:
     image: mysql:8
