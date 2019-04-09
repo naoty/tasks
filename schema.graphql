@@ -1,0 +1,15 @@
+type Query {
+  statuses: [Status!]!
+}
+
+type Status {
+  statusID: ID!
+  name: String!
+  tasks: [Task!]!
+}
+
+type Task {
+  taskID: ID!
+  title: String!
+  status: Status!
+}

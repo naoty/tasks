@@ -17,6 +17,7 @@ services:
       - 1323:1323
     volumes:
       - ./backend:/tasks
+      - ./schema.graphql:/tasks/schema.graphql
   database:
     image: mysql:8
     environment:
