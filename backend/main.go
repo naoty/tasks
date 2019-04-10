@@ -3,11 +3,14 @@ package main
 import (
 	"log"
 
+	gh "github.com/99designs/gqlgen/handler"
 	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/naoty/tasks/backend/config"
+	"github.com/naoty/tasks/backend/gqlgen"
 	"github.com/naoty/tasks/backend/handler"
 )
 
@@ -29,6 +32,13 @@ func main() {
 
 	e.GET("/statuses", handler.GetStatuses)
 	e.POST("/tasks", handler.PostTasks)
+
+	schema := gqlgen.NewExecutableSchema(gqlgen.Config{Resolvers: &gqlgen.Resolver{}})
+	e.POST("/query", echo.WrapHandler(gh.GraphQL(schema)))
+
+	if env.Debug {
+		e.GET("/playground", echo.WrapHandler(gh.Playground("GraphQL playground", "/query")))
+	}
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
