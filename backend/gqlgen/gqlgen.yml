@@ -9,6 +9,11 @@ exec:
   filename: generated.go
 model:
   filename: models_gen.go
+models:
+  Status:
+    model: github.com/naoty/tasks/backend/model.Status
+  Task:
+    model: github.com/naoty/tasks/backend/model.Task
 resolver:
   filename: resolver.go
   type: Resolver

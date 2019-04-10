@@ -11,6 +11,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/naoty/tasks/backend/model"
 	"github.com/vektah/gqlparser"
 	"github.com/vektah/gqlparser/ast"
 )
@@ -34,6 +35,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Query() QueryResolver
+	Task() TaskResolver
 }
 
 type DirectiveRoot struct {
@@ -46,6 +48,7 @@ type ComplexityRoot struct {
 
 	Status struct {
 		Name     func(childComplexity int) int
+		Position func(childComplexity int) int
 		StatusID func(childComplexity int) int
 		Tasks    func(childComplexity int) int
 	}
@@ -58,7 +61,10 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	Statuses(ctx context.Context) ([]Status, error)
+	Statuses(ctx context.Context) ([]model.Status, error)
+}
+type TaskResolver interface {
+	Status(ctx context.Context, obj *model.Task) (*model.Status, error)
 }
 
 type executableSchema struct {
@@ -89,6 +95,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Status.Name(childComplexity), true
+
+	case "Status.Position":
+		if e.complexity.Status.Position == nil {
+			break
+		}
+
+		return e.complexity.Status.Position(childComplexity), true
 
 	case "Status.StatusID":
 		if e.complexity.Status.StatusID == nil {
@@ -194,13 +207,14 @@ var parsedSchema = gqlparser.MustLoadSchema(
 }
 
 type Status {
-  statusID: ID!
+  statusId: ID!
   name: String!
+  position: Int!
   tasks: [Task!]!
 }
 
 type Task {
-  taskID: ID!
+  taskId: ID!
   title: String!
   status: Status!
 }
@@ -278,10 +292,10 @@ func (ec *executionContext) _Query_statuses(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Status)
+	res := resTmp.([]model.Status)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -339,7 +353,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Status_statusID(ctx context.Context, field graphql.CollectedField, obj *Status) graphql.Marshaler {
+func (ec *executionContext) _Status_statusId(ctx context.Context, field graphql.CollectedField, obj *model.Status) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -366,7 +380,7 @@ func (ec *executionContext) _Status_statusID(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Status_name(ctx context.Context, field graphql.CollectedField, obj *Status) graphql.Marshaler {
+func (ec *executionContext) _Status_name(ctx context.Context, field graphql.CollectedField, obj *model.Status) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -393,7 +407,34 @@ func (ec *executionContext) _Status_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Status_tasks(ctx context.Context, field graphql.CollectedField, obj *Status) graphql.Marshaler {
+func (ec *executionContext) _Status_position(ctx context.Context, field graphql.CollectedField, obj *model.Status) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Status",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Position, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Status_tasks(ctx context.Context, field graphql.CollectedField, obj *model.Status) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -414,13 +455,13 @@ func (ec *executionContext) _Status_tasks(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Task)
+	res := resTmp.([]model.Task)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐTask(ctx, field.Selections, res)
+	return ec.marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Task_taskID(ctx context.Context, field graphql.CollectedField, obj *Task) graphql.Marshaler {
+func (ec *executionContext) _Task_taskId(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -447,7 +488,7 @@ func (ec *executionContext) _Task_taskID(ctx context.Context, field graphql.Coll
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Task_title(ctx context.Context, field graphql.CollectedField, obj *Task) graphql.Marshaler {
+func (ec *executionContext) _Task_title(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -474,20 +515,20 @@ func (ec *executionContext) _Task_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Task_status(ctx context.Context, field graphql.CollectedField, obj *Task) graphql.Marshaler {
+func (ec *executionContext) _Task_status(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
 		Object:   "Task",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
+		return ec.resolvers.Task().Status(rctx, obj)
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -495,10 +536,10 @@ func (ec *executionContext) _Task_status(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(Status)
+	res := resTmp.(*model.Status)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) graphql.Marshaler {
@@ -1386,7 +1427,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var statusImplementors = []string{"Status"}
 
-func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, obj *Status) graphql.Marshaler {
+func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, obj *model.Status) graphql.Marshaler {
 	fields := graphql.CollectFields(ctx, sel, statusImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -1395,13 +1436,18 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Status")
-		case "statusID":
-			out.Values[i] = ec._Status_statusID(ctx, field, obj)
+		case "statusId":
+			out.Values[i] = ec._Status_statusId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
 		case "name":
 			out.Values[i] = ec._Status_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "position":
+			out.Values[i] = ec._Status_position(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
@@ -1423,7 +1469,7 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 
 var taskImplementors = []string{"Task"}
 
-func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj *Task) graphql.Marshaler {
+func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj *model.Task) graphql.Marshaler {
 	fields := graphql.CollectFields(ctx, sel, taskImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -1432,8 +1478,8 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Task")
-		case "taskID":
-			out.Values[i] = ec._Task_taskID(ctx, field, obj)
+		case "taskId":
+			out.Values[i] = ec._Task_taskId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
@@ -1443,10 +1489,19 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 				invalid = true
 			}
 		case "status":
-			out.Values[i] = ec._Task_status(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalid = true
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Task_status(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -1719,11 +1774,19 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return graphql.MarshalID(v)
 }
 
-func (ec *executionContext) marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐStatus(ctx context.Context, sel ast.SelectionSet, v Status) graphql.Marshaler {
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	return graphql.UnmarshalInt(v)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v model.Status) graphql.Marshaler {
 	return ec._Status(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐStatus(ctx context.Context, sel ast.SelectionSet, v []Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v []model.Status) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -1747,7 +1810,7 @@ func (ec *executionContext) marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbac
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐStatus(ctx, sel, v[i])
+			ret[i] = ec.marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -1760,6 +1823,16 @@ func (ec *executionContext) marshalNStatus2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbac
 	return ret
 }
 
+func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v *model.Status) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Status(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalString(v)
 }
@@ -1768,11 +1841,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return graphql.MarshalString(v)
 }
 
-func (ec *executionContext) marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐTask(ctx context.Context, sel ast.SelectionSet, v Task) graphql.Marshaler {
+func (ec *executionContext) marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v model.Task) graphql.Marshaler {
 	return ec._Task(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐTask(ctx context.Context, sel ast.SelectionSet, v []Task) graphql.Marshaler {
+func (ec *executionContext) marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v []model.Task) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -1796,7 +1869,7 @@ func (ec *executionContext) marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbacke
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐTask(ctx, sel, v[i])
+			ret[i] = ec.marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
