@@ -8,5 +8,9 @@
     "normalizr": "^3.3.0",
     "nuxt": "^2.4.5",
     "vuedraggable": "^2.19.3"
+  },
+  "devDependencies": {
+    "@babel/runtime-corejs2": "^7.4.3",
+    "core-js": "2"
   }
 }
