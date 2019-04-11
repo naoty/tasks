@@ -13,9 +13,6 @@ type Resolver struct{}
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
-func (r *Resolver) Status() StatusResolver {
-	return &statusResolver{r}
-}
 func (r *Resolver) Task() TaskResolver {
 	return &taskResolver{r}
 }
@@ -37,17 +34,8 @@ func (r *queryResolver) Statuses(ctx context.Context) ([]model.Status, error) {
 	return statuses, nil
 }
 
-type statusResolver struct{ *Resolver }
-
-func (r *statusResolver) ID(ctx context.Context, obj *model.Status) (string, error) {
-	return obj.StatusID, nil
-}
-
 type taskResolver struct{ *Resolver }
 
-func (r *taskResolver) ID(ctx context.Context, obj *model.Task) (string, error) {
-	return obj.TaskID, nil
-}
 func (r *taskResolver) Status(ctx context.Context, obj *model.Task) (*model.Status, error) {
 	panic("not implemented")
 }

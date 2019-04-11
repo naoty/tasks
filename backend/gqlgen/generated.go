@@ -35,7 +35,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Query() QueryResolver
-	Status() StatusResolver
 	Task() TaskResolver
 }
 
@@ -48,15 +47,15 @@ type ComplexityRoot struct {
 	}
 
 	Status struct {
-		ID       func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Position func(childComplexity int) int
+		StatusID func(childComplexity int) int
 		Tasks    func(childComplexity int) int
 	}
 
 	Task struct {
-		ID     func(childComplexity int) int
 		Status func(childComplexity int) int
+		TaskID func(childComplexity int) int
 		Title  func(childComplexity int) int
 	}
 }
@@ -64,12 +63,7 @@ type ComplexityRoot struct {
 type QueryResolver interface {
 	Statuses(ctx context.Context) ([]model.Status, error)
 }
-type StatusResolver interface {
-	ID(ctx context.Context, obj *model.Status) (string, error)
-}
 type TaskResolver interface {
-	ID(ctx context.Context, obj *model.Task) (string, error)
-
 	Status(ctx context.Context, obj *model.Task) (*model.Status, error)
 }
 
@@ -95,13 +89,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Statuses(childComplexity), true
 
-	case "Status.ID":
-		if e.complexity.Status.ID == nil {
-			break
-		}
-
-		return e.complexity.Status.ID(childComplexity), true
-
 	case "Status.Name":
 		if e.complexity.Status.Name == nil {
 			break
@@ -116,6 +103,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.Position(childComplexity), true
 
+	case "Status.StatusID":
+		if e.complexity.Status.StatusID == nil {
+			break
+		}
+
+		return e.complexity.Status.StatusID(childComplexity), true
+
 	case "Status.Tasks":
 		if e.complexity.Status.Tasks == nil {
 			break
@@ -123,19 +117,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.Tasks(childComplexity), true
 
-	case "Task.ID":
-		if e.complexity.Task.ID == nil {
-			break
-		}
-
-		return e.complexity.Task.ID(childComplexity), true
-
 	case "Task.Status":
 		if e.complexity.Task.Status == nil {
 			break
 		}
 
 		return e.complexity.Task.Status(childComplexity), true
+
+	case "Task.TaskID":
+		if e.complexity.Task.TaskID == nil {
+			break
+		}
+
+		return e.complexity.Task.TaskID(childComplexity), true
 
 	case "Task.Title":
 		if e.complexity.Task.Title == nil {
@@ -366,13 +360,13 @@ func (ec *executionContext) _Status_id(ctx context.Context, field graphql.Collec
 		Object:   "Status",
 		Field:    field,
 		Args:     nil,
-		IsMethod: true,
+		IsMethod: false,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Status().ID(rctx, obj)
+		return obj.StatusID, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -474,13 +468,13 @@ func (ec *executionContext) _Task_id(ctx context.Context, field graphql.Collecte
 		Object:   "Task",
 		Field:    field,
 		Args:     nil,
-		IsMethod: true,
+		IsMethod: false,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Task().ID(rctx, obj)
+		return obj.TaskID, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -1443,19 +1437,10 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Status")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Status_id(ctx, field, obj)
-				if res == graphql.Null {
-					invalid = true
-				}
-				return res
-			})
+			out.Values[i] = ec._Status_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		case "name":
 			out.Values[i] = ec._Status_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -1494,19 +1479,10 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Task")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Task_id(ctx, field, obj)
-				if res == graphql.Null {
-					invalid = true
-				}
-				return res
-			})
+			out.Values[i] = ec._Task_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		case "title":
 			out.Values[i] = ec._Task_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

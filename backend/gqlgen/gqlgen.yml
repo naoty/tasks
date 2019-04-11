@@ -17,3 +17,4 @@ models:
 resolver:
   filename: resolver.go
   type: Resolver
+struct_tag: gqlgen
