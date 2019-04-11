@@ -1,6 +1,13 @@
 const Dotenv = require("dotenv-webpack");
 
 export default {
+  apollo: {
+    clientConfigs: {
+      default: {
+        httpEndpoint: process.env.GRAPHQL_ENDPOINT
+      }
+    }
+  },
   build: {
     extend(config, { }) {
       config.plugins.push(new Dotenv({ safe: true }));
@@ -14,6 +21,7 @@ export default {
     title: "Tasks"
   },
   modules: [
+    "@nuxtjs/apollo",
     "@nuxtjs/vuetify"
   ]
 }
