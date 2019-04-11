@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 
 	gh "github.com/99designs/gqlgen/handler"
@@ -33,7 +34,14 @@ func main() {
 	e.GET("/statuses", handler.GetStatuses)
 	e.POST("/tasks", handler.PostTasks)
 
-	schema := gqlgen.NewExecutableSchema(gqlgen.Config{Resolvers: &gqlgen.Resolver{}})
+	db, err := sql.Open("mysql", env.GetDSN())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer db.Close()
+
+	resolver := &gqlgen.Resolver{DB: db}
+	schema := gqlgen.NewExecutableSchema(gqlgen.Config{Resolvers: resolver})
 	e.POST("/query", echo.WrapHandler(gh.GraphQL(schema)))
 
 	if env.Debug {
