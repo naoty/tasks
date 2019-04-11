@@ -3,14 +3,14 @@ type Query {
 }
 
 type Status {
-  statusId: ID!
+  id: ID!
   name: String!
   position: Int!
   tasks: [Task!]!
 }
 
 type Task {
-  taskId: ID!
+  id: ID!
   title: String!
   status: Status!
 }
