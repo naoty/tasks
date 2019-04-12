@@ -29,10 +29,7 @@ export default {
     "task-card": TaskCard
   },
   async fetch({ env, store }) {
-    const url = `${process.env.BACKEND_BASE_URL}/statuses`;
-    const { data } = await axios.get(url);
-    const normalizedData = normalize(data, [statusSchema]);
-    store.commit("setStatusesAndTasks", normalizedData.entities);
+    await store.dispatch("fetchStatuses");
   },
   methods: {
     handleDragEnd: function(event) {

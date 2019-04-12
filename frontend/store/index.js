@@ -1,5 +1,8 @@
 import axios from "axios";
 import Vuex from "vuex";
+import gql from "graphql-tag";
+import { normalize, schema } from "normalizr";
+import { statusesSchema } from "../schema";
 
 export default function () {
   return new Vuex.Store({
@@ -45,6 +48,24 @@ export default function () {
       async addTask({ commit }, task) {
         const { data } = await axios.post(`${process.env.BACKEND_BASE_URL}/tasks`, { task });
         commit("addTask", data.task);
+      },
+      async fetchStatuses({ commit }) {
+        const client = this.app.apolloProvider.defaultClient;
+        const { data } = await client.query({
+          query: gql`query {
+            statuses {
+              id
+              name
+              tasks {
+                id
+                title
+              }
+            }
+          }`
+        });
+        const rootSchema = new schema.Object({ statuses: statusesSchema });
+        const normalizedData = normalize(data, rootSchema);
+        commit("setStatusesAndTasks", normalizedData.entities);
       }
     }
   });
