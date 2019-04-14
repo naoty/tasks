@@ -13,11 +13,21 @@ type Resolver struct {
 	*sql.DB
 }
 
+func (r *Resolver) Mutation() MutationResolver {
+	return &mutationResolver{r}
+}
+
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
 func (r *Resolver) Task() TaskResolver {
 	return &taskResolver{r}
+}
+
+type mutationResolver struct{ *Resolver }
+
+func (r *mutationResolver) CreateTask(ctx context.Context, title string) (*model.Task, error) {
+	panic("not implemented")
 }
 
 type queryResolver struct{ *Resolver }

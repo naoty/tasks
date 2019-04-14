@@ -2,6 +2,10 @@ type Query {
   statuses: [Status!]!
 }
 
+type Mutation {
+  createTask(title: String!): Task!
+}
+
 type Status {
   id: ID!
   name: String!
