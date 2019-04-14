@@ -13,6 +13,7 @@ import (
 	"github.com/naoty/tasks/backend/config"
 	"github.com/naoty/tasks/backend/gqlgen"
 	"github.com/naoty/tasks/backend/handler"
+	"github.com/naoty/tasks/backend/resolver"
 )
 
 func main() {
@@ -40,7 +41,7 @@ func main() {
 	}
 	defer db.Close()
 
-	resolver := &gqlgen.Resolver{DB: db}
+	resolver := &resolver.Root{DB: db}
 	schema := gqlgen.NewExecutableSchema(gqlgen.Config{Resolvers: resolver})
 	e.POST("/query", echo.WrapHandler(gh.GraphQL(schema)))
 

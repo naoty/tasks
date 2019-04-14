@@ -1,4 +1,4 @@
-package gqlgen
+package resolver
 
 import (
 	"context"
@@ -7,30 +7,9 @@ import (
 	"github.com/naoty/tasks/backend/model"
 )
 
-// THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
-
-type Resolver struct {
-	*sql.DB
+type queryResolver struct {
+	*Root
 }
-
-func (r *Resolver) Mutation() MutationResolver {
-	return &mutationResolver{r}
-}
-
-func (r *Resolver) Query() QueryResolver {
-	return &queryResolver{r}
-}
-func (r *Resolver) Task() TaskResolver {
-	return &taskResolver{r}
-}
-
-type mutationResolver struct{ *Resolver }
-
-func (r *mutationResolver) CreateTask(ctx context.Context, title string) (*model.Task, error) {
-	panic("not implemented")
-}
-
-type queryResolver struct{ *Resolver }
 
 func (r *queryResolver) Statuses(ctx context.Context) ([]model.Status, error) {
 	rows, err := r.DB.Query("SELECT * FROM statuses LEFT OUTER JOIN tasks USING (status_id) ORDER BY position ASC")
@@ -76,10 +55,4 @@ func (r *queryResolver) Statuses(ctx context.Context) ([]model.Status, error) {
 	}
 
 	return statuses, nil
-}
-
-type taskResolver struct{ *Resolver }
-
-func (r *taskResolver) Status(ctx context.Context, obj *model.Task) (*model.Status, error) {
-	panic("not implemented")
 }
