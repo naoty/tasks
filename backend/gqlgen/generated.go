@@ -36,6 +36,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Status() StatusResolver
 	Task() TaskResolver
 }
 
@@ -70,6 +71,9 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Statuses(ctx context.Context) ([]model.Status, error)
+}
+type StatusResolver interface {
+	Tasks(ctx context.Context, obj *model.Status) ([]model.Task, error)
 }
 type TaskResolver interface {
 	Status(ctx context.Context, obj *model.Task) (*model.Status, error)
@@ -526,13 +530,13 @@ func (ec *executionContext) _Status_tasks(ctx context.Context, field graphql.Col
 		Object:   "Status",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Tasks, nil
+		return ec.resolvers.Status().Tasks(rctx, obj)
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -1568,10 +1572,19 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 				invalid = true
 			}
 		case "tasks":
-			out.Values[i] = ec._Status_tasks(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalid = true
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Status_tasks(ctx, field, obj)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

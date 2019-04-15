@@ -5,5 +5,4 @@ type Status struct {
 	StatusID string `gqlgen:"id"`
 	Name     string
 	Position int
-	Tasks    []Task
 }
