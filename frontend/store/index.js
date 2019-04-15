@@ -13,13 +13,9 @@ export default function () {
       },
     }),
     mutations: {
-      addTask(state, { taskId, title, statusId }) {
-        state.statuses[statusId].tasks.push(taskId);
-        state.tasks[taskId] = {
-          id: taskId,
-          title,
-          status: statusId
-        };
+      addTask(state, { id, title, status }) {
+        state.statuses[status].tasks.push(id);
+        state.tasks[id] = { id, title, status };
       },
       moveTask(state, { oldStatusId, oldIndex, newStatusId, newIndex }) {
         const oldStatus = state.statuses[oldStatusId];
@@ -45,9 +41,28 @@ export default function () {
       }
     },
     actions: {
-      async addTask({ commit }, task) {
-        const { data } = await axios.post(`${process.env.BACKEND_BASE_URL}/tasks`, { task });
-        commit("addTask", data.task);
+      async addTask({ commit }, title) {
+        const client = this.app.apolloProvider.defaultClient;
+        const { data } = await client.mutate({
+          mutation: gql`mutation ($title: String!) {
+            createTask(title: $title) {
+              id
+              title
+              status {
+                id
+              }
+            }
+          }`,
+          variables: {
+            title
+          }
+        });
+        const statusSchema = new schema.Entity("statuses");
+        const taskSchema = new schema.Entity("tasks", { status: statusSchema });
+        const rootSchema = new schema.Object({ createTask: taskSchema });
+        const normalizedData = normalize(data, rootSchema);
+        const task = normalizedData.entities.tasks[normalizedData.result.createTask];
+        commit("addTask", task);
       },
       async fetchStatuses({ commit }) {
         const client = this.app.apolloProvider.defaultClient;

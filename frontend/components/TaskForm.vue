@@ -28,7 +28,7 @@ export default {
         return;
       }
 
-      await this.$store.dispatch("addTask", { title: this.title });
+      await this.$store.dispatch("addTask", this.title);
       this.canShowDialog = false;
     }
   }
