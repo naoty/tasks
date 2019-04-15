@@ -12,7 +12,6 @@ import (
 	"github.com/labstack/echo/middleware"
 	"github.com/naoty/tasks/backend/config"
 	"github.com/naoty/tasks/backend/gqlgen"
-	"github.com/naoty/tasks/backend/handler"
 	"github.com/naoty/tasks/backend/resolver"
 )
 
@@ -28,12 +27,6 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	e.Use(handler.CustomContextMiddleware)
-	e.Use(handler.EnvMiddleware(env))
-	e.Use(handler.DatabaseMiddleware)
-
-	e.GET("/statuses", handler.GetStatuses)
-	e.POST("/tasks", handler.PostTasks)
 
 	db, err := sql.Open("mysql", env.GetDSN())
 	if err != nil {
