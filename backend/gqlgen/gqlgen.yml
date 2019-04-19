@@ -9,6 +9,7 @@ schema:
   - ../../graphql/mutation.graphql
   - ../../graphql/status.graphql
   - ../../graphql/task.graphql
+  - ../../graphql/create_task.graphql
 exec:
   filename: generated.go
 model:

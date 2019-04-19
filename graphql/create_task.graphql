@@ -1,0 +1,7 @@
+input CreateTaskInput {
+  title: String!
+}
+
+type CreateTaskPayload {
+  task: Task!
+}

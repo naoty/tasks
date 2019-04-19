@@ -44,8 +44,12 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	CreateTaskPayload struct {
+		Task func(childComplexity int) int
+	}
+
 	Mutation struct {
-		CreateTask func(childComplexity int, title string) int
+		CreateTask func(childComplexity int, input CreateTaskInput) int
 	}
 
 	Query struct {
@@ -67,7 +71,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateTask(ctx context.Context, title string) (*model.Task, error)
+	CreateTask(ctx context.Context, input CreateTaskInput) (*CreateTaskPayload, error)
 }
 type QueryResolver interface {
 	Statuses(ctx context.Context) ([]model.Status, error)
@@ -94,6 +98,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "CreateTaskPayload.Task":
+		if e.complexity.CreateTaskPayload.Task == nil {
+			break
+		}
+
+		return e.complexity.CreateTaskPayload.Task(childComplexity), true
+
 	case "Mutation.CreateTask":
 		if e.complexity.Mutation.CreateTask == nil {
 			break
@@ -104,7 +115,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTask(childComplexity, args["title"].(string)), true
+		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(CreateTaskInput)), true
 
 	case "Query.Statuses":
 		if e.complexity.Query.Statuses == nil {
@@ -239,8 +250,16 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var parsedSchema = gqlparser.MustLoadSchema(
+	&ast.Source{Name: "../../graphql/create_task.graphql", Input: `input CreateTaskInput {
+  title: String!
+}
+
+type CreateTaskPayload {
+  task: Task!
+}
+`},
 	&ast.Source{Name: "../../graphql/mutation.graphql", Input: `type Mutation {
-  createTask(title: String!): Task!
+  createTask(input: CreateTaskInput!): CreateTaskPayload!
 }
 `},
 	&ast.Source{Name: "../../graphql/query.graphql", Input: `type Query {
@@ -274,14 +293,14 @@ var parsedSchema = gqlparser.MustLoadSchema(
 func (ec *executionContext) field_Mutation_createTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["title"]; ok {
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 CreateTaskInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNCreateTaskInput2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐCreateTaskInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["title"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -331,6 +350,33 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _CreateTaskPayload_task(ctx context.Context, field graphql.CollectedField, obj *CreateTaskPayload) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "CreateTaskPayload",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Task, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Task)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createTask(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -351,7 +397,7 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTask(rctx, args["title"].(string))
+		return ec.resolvers.Mutation().CreateTask(rctx, args["input"].(CreateTaskInput))
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -359,10 +405,10 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Task)
+	res := resTmp.(*CreateTaskPayload)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTask2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx, field.Selections, res)
+	return ec.marshalNCreateTaskPayload2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐCreateTaskPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_statuses(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1467,6 +1513,24 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, v interface{}) (CreateTaskInput, error) {
+	var it CreateTaskInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1474,6 +1538,33 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var createTaskPayloadImplementors = []string{"CreateTaskPayload"}
+
+func (ec *executionContext) _CreateTaskPayload(ctx context.Context, sel ast.SelectionSet, obj *CreateTaskPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, createTaskPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateTaskPayload")
+		case "task":
+			out.Values[i] = ec._CreateTaskPayload_task(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
 
 var mutationImplementors = []string{"Mutation"}
 
@@ -1900,6 +1991,24 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return graphql.MarshalBoolean(v)
 }
 
+func (ec *executionContext) unmarshalNCreateTaskInput2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐCreateTaskInput(ctx context.Context, v interface{}) (CreateTaskInput, error) {
+	return ec.unmarshalInputCreateTaskInput(ctx, v)
+}
+
+func (ec *executionContext) marshalNCreateTaskPayload2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐCreateTaskPayload(ctx context.Context, sel ast.SelectionSet, v CreateTaskPayload) graphql.Marshaler {
+	return ec._CreateTaskPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCreateTaskPayload2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐCreateTaskPayload(ctx context.Context, sel ast.SelectionSet, v *CreateTaskPayload) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CreateTaskPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalID(v)
 }
@@ -2014,16 +2123,6 @@ func (ec *executionContext) marshalNTask2ᚕgithubᚗcomᚋnaotyᚋtasksᚋbacke
 	}
 	wg.Wait()
 	return ret
-}
-
-func (ec *executionContext) marshalNTask2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx context.Context, sel ast.SelectionSet, v *model.Task) graphql.Marshaler {
-	if v == nil {
-		if !ec.HasError(graphql.GetResolverContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Task(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

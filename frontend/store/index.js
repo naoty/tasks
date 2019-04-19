@@ -45,11 +45,15 @@ export default function () {
         const client = this.app.apolloProvider.defaultClient;
         const { data } = await client.mutate({
           mutation: gql`mutation ($title: String!) {
-            createTask(title: $title) {
-              id
-              title
-              status {
+            createTask(input: {
+              title: $title
+            }) {
+              task {
                 id
+                title
+                status {
+                  id
+                }
               }
             }
           }`,
@@ -59,9 +63,9 @@ export default function () {
         });
         const statusSchema = new schema.Entity("statuses");
         const taskSchema = new schema.Entity("tasks", { status: statusSchema });
-        const rootSchema = new schema.Object({ createTask: taskSchema });
+        const rootSchema = new schema.Object({ createTask: { task: taskSchema } });
         const normalizedData = normalize(data, rootSchema);
-        const task = normalizedData.entities.tasks[normalizedData.result.createTask];
+        const task = normalizedData.entities.tasks[normalizedData.result.createTask.task];
         commit("addTask", task);
       },
       async fetchStatuses({ commit }) {

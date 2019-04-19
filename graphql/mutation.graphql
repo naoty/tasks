@@ -1,3 +1,3 @@
 type Mutation {
-  createTask(title: String!): Task!
+  createTask(input: CreateTaskInput!): CreateTaskPayload!
 }
