@@ -1,0 +1,8 @@
+input DeleteTaskInput {
+  clientMutationId: String
+  id: ID!
+}
+
+type DeleteTaskPayload {
+  clientMutationId: String
+}

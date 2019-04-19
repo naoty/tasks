@@ -15,3 +15,12 @@ type CreateTaskPayload struct {
 	ClientMutationID *string    `json:"clientMutationId"`
 	Task             model.Task `json:"task"`
 }
+
+type DeleteTaskInput struct {
+	ClientMutationID *string `json:"clientMutationId"`
+	ID               string  `json:"id"`
+}
+
+type DeleteTaskPayload struct {
+	ClientMutationID *string `json:"clientMutationId"`
+}

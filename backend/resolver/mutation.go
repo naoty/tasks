@@ -45,3 +45,12 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTa
 
 	return &gqlgen.CreateTaskPayload{ClientMutationID: input.ClientMutationID, Task: task}, err
 }
+
+func (r *mutationResolver) DeleteTask(ctx context.Context, input gqlgen.DeleteTaskInput) (*gqlgen.DeleteTaskPayload, error) {
+	_, err := r.DB.Exec("DELETE FROM tasks WHERE task_id = ?", input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gqlgen.DeleteTaskPayload{ClientMutationID: input.ClientMutationID}, nil
+}
