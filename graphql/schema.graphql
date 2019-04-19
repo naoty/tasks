@@ -1,20 +1,4 @@
-type Query {
-  statuses: [Status!]!
-}
-
-type Mutation {
-  createTask(title: String!): Task!
-}
-
-type Status {
-  id: ID!
-  name: String!
-  position: Int!
-  tasks: [Task!]!
-}
-
-type Task {
-  id: ID!
-  title: String!
-  status: Status!
+schema {
+  query: Query
+  mutation: Mutation
 }

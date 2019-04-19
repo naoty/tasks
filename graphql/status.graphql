@@ -1,0 +1,6 @@
+type Status {
+  id: ID!
+  name: String!
+  position: Int!
+  tasks: [Task!]!
+}

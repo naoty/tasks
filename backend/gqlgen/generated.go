@@ -239,22 +239,27 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var parsedSchema = gqlparser.MustLoadSchema(
-	&ast.Source{Name: "../../graphql/schema.graphql", Input: `type Query {
-  statuses: [Status!]!
-}
-
-type Mutation {
+	&ast.Source{Name: "../../graphql/mutation.graphql", Input: `type Mutation {
   createTask(title: String!): Task!
 }
-
-type Status {
+`},
+	&ast.Source{Name: "../../graphql/query.graphql", Input: `type Query {
+  statuses: [Status!]!
+}
+`},
+	&ast.Source{Name: "../../graphql/schema.graphql", Input: `schema {
+  query: Query
+  mutation: Mutation
+}
+`},
+	&ast.Source{Name: "../../graphql/status.graphql", Input: `type Status {
   id: ID!
   name: String!
   position: Int!
   tasks: [Task!]!
 }
-
-type Task {
+`},
+	&ast.Source{Name: "../../graphql/task.graphql", Input: `type Task {
   id: ID!
   title: String!
   status: Status!
