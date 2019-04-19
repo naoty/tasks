@@ -43,5 +43,5 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTa
 	taskRows.Next()
 	err = taskRows.Scan(&task.TaskID, &task.Title, &task.StatusID)
 
-	return &gqlgen.CreateTaskPayload{Task: task}, err
+	return &gqlgen.CreateTaskPayload{ClientMutationID: input.ClientMutationID, Task: task}, err
 }

@@ -1,7 +1,9 @@
 input CreateTaskInput {
+  clientMutationId: String
   title: String!
 }
 
 type CreateTaskPayload {
+  clientMutationId: String
   task: Task!
 }

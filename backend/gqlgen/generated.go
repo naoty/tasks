@@ -45,7 +45,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	CreateTaskPayload struct {
-		Task func(childComplexity int) int
+		ClientMutationID func(childComplexity int) int
+		Task             func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -97,6 +98,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "CreateTaskPayload.ClientMutationID":
+		if e.complexity.CreateTaskPayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.CreateTaskPayload.ClientMutationID(childComplexity), true
 
 	case "CreateTaskPayload.Task":
 		if e.complexity.CreateTaskPayload.Task == nil {
@@ -251,10 +259,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "../../graphql/create_task.graphql", Input: `input CreateTaskInput {
+  clientMutationId: String
   title: String!
 }
 
 type CreateTaskPayload {
+  clientMutationId: String
   task: Task!
 }
 `},
@@ -349,6 +359,30 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ***************************** args.gotpl *****************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _CreateTaskPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *CreateTaskPayload) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "CreateTaskPayload",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _CreateTaskPayload_task(ctx context.Context, field graphql.CollectedField, obj *CreateTaskPayload) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
@@ -1519,6 +1553,12 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, v
 
 	for k, v := range asMap {
 		switch k {
+		case "clientMutationId":
+			var err error
+			it.ClientMutationID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "title":
 			var err error
 			it.Title, err = ec.unmarshalNString2string(ctx, v)
@@ -1550,6 +1590,8 @@ func (ec *executionContext) _CreateTaskPayload(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateTaskPayload")
+		case "clientMutationId":
+			out.Values[i] = ec._CreateTaskPayload_clientMutationId(ctx, field, obj)
 		case "task":
 			out.Values[i] = ec._CreateTaskPayload_task(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

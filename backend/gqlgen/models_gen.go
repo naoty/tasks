@@ -7,9 +7,11 @@ import (
 )
 
 type CreateTaskInput struct {
-	Title string `json:"title"`
+	ClientMutationID *string `json:"clientMutationId"`
+	Title            string  `json:"title"`
 }
 
 type CreateTaskPayload struct {
-	Task model.Task `json:"task"`
+	ClientMutationID *string    `json:"clientMutationId"`
+	Task             model.Task `json:"task"`
 }
