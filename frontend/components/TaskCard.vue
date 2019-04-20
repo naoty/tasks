@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     task: function() {
-      return this.$store.state.tasks[this.taskId];
+      return this.$store.state.tasks.tasks[this.taskId];
     }
   },
   methods: {

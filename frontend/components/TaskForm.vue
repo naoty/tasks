@@ -28,7 +28,7 @@ export default {
         return;
       }
 
-      await this.$store.dispatch("addTask", this.title);
+      await this.$store.dispatch("createTask", this.title);
       this.canShowDialog = false;
     }
   }

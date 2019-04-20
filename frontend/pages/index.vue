@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-layout>
-      <v-flex v-for="(status, statusId) in $store.state.statuses" :key="statusId" pa-2>
+      <v-flex v-for="(status, statusId) in $store.state.statuses.statuses" :key="statusId" pa-2>
         <h1>{{ status.name }}</h1>
         <v-divider></v-divider>
         <v-layout column mt-2>
