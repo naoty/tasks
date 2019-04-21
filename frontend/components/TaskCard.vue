@@ -28,7 +28,10 @@ export default {
   },
   methods: {
     handleClearButtonClick(event) {
-      this.$store.commit("removeTask", { taskId: this.taskId });
+      this.$store.dispatch("removeTask", {
+        taskId: this.taskId,
+        statusId: this.task.status
+      });
     }
   }
 };

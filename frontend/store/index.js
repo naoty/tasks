@@ -51,5 +51,23 @@ export const actions = {
     const normalizedData = normalize(data, rootSchema);
     commit("tasks/set", normalizedData.entities.tasks);
     commit("statuses/set", normalizedData.entities.statuses);
+  },
+  async removeTask({ commit }, { taskId, statusId }) {
+    const client = this.app.apolloProvider.defaultClient;
+    await client.mutate({
+      mutation: gql`mutation ($id: ID!) {
+        deleteTask(input: {
+          id: $id
+        }) {
+          clientMutationId
+        }
+      }`,
+      variables: {
+        id: taskId
+      }
+    });
+
+    commit("tasks/remove", taskId);
+    commit("statuses/removeTask", { statusId, taskId });
   }
 };
