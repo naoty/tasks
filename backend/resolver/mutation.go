@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/naoty/tasks/backend/gqlgen"
-
 	"github.com/naoty/tasks/backend/model"
 )
 
@@ -27,7 +26,21 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTa
 		return nil, err
 	}
 
-	_, err = r.DB.Exec("INSERT INTO tasks (title, status_id) VALUES (?, ?)", input.Title, initialStatusID)
+	_, err = r.DB.Exec(`
+		INSERT INTO
+			tasks (status_id, title, position)
+		SELECT
+			?
+			, ?
+			, (CASE
+				WHEN MAX(position) IS NULL THEN 1
+				ELSE MAX(position) + 1
+			END)
+		FROM
+			tasks
+		WHERE
+			status_id = ?
+	`, initialStatusID, input.Title, initialStatusID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +54,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTa
 
 	var task model.Task
 	taskRows.Next()
-	err = taskRows.Scan(&task.TaskID, &task.Title, &task.StatusID)
+	err = taskRows.Scan(&task.TaskID, &task.StatusID, &task.Title, &task.Position)
 
 	return &gqlgen.CreateTaskPayload{ClientMutationID: input.ClientMutationID, Task: task}, err
 }

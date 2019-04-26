@@ -70,9 +70,10 @@ type ComplexityRoot struct {
 	}
 
 	Task struct {
-		Status func(childComplexity int) int
-		TaskID func(childComplexity int) int
-		Title  func(childComplexity int) int
+		Position func(childComplexity int) int
+		Status   func(childComplexity int) int
+		TaskID   func(childComplexity int) int
+		Title    func(childComplexity int) int
 	}
 }
 
@@ -184,6 +185,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Status.Tasks(childComplexity), true
+
+	case "Task.Position":
+		if e.complexity.Task.Position == nil {
+			break
+		}
+
+		return e.complexity.Task.Position(childComplexity), true
 
 	case "Task.Status":
 		if e.complexity.Task.Status == nil {
@@ -325,8 +333,9 @@ type DeleteTaskPayload {
 `},
 	&ast.Source{Name: "../../graphql/task.graphql", Input: `type Task {
   id: ID!
-  title: String!
   status: Status!
+  title: String!
+  position: Int!
 }
 `},
 )
@@ -769,6 +778,33 @@ func (ec *executionContext) _Task_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Task_status(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Task",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Task().Status(rctx, obj)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Status)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNStatus2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Task_title(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -796,20 +832,20 @@ func (ec *executionContext) _Task_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Task_status(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
+func (ec *executionContext) _Task_position(ctx context.Context, field graphql.CollectedField, obj *model.Task) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
 		Object:   "Task",
 		Field:    field,
 		Args:     nil,
-		IsMethod: true,
+		IsMethod: false,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Task().Status(rctx, obj)
+		return obj.Position, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -817,10 +853,10 @@ func (ec *executionContext) _Task_status(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Status)
+	res := resTmp.(int)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNStatus2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) graphql.Marshaler {
@@ -1910,11 +1946,6 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
-		case "title":
-			out.Values[i] = ec._Task_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalid = true
-			}
 		case "status":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -1929,6 +1960,16 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
+		case "title":
+			out.Values[i] = ec._Task_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "position":
+			out.Values[i] = ec._Task_position(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

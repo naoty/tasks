@@ -1,5 +1,6 @@
 type Task {
   id: ID!
-  title: String!
   status: Status!
+  title: String!
+  position: Int!
 }
