@@ -1,14 +1,13 @@
 package resolver
 
 import (
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	"github.com/naoty/tasks/backend/gqlgen"
 )
 
 // Root is an implementation of gqlgen.ResolverRoot.
 type Root struct {
-	*sql.DB
+	*sqlx.DB
 }
 
 // Mutation returns a resolver for mutation.

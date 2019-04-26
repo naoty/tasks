@@ -1,12 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 
 	gh "github.com/99designs/gqlgen/handler"
 	_ "github.com/go-sql-driver/mysql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -28,7 +28,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 
-	db, err := sql.Open("mysql", env.GetDSN())
+	db, err := sqlx.Connect("mysql", env.GetDSN())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
