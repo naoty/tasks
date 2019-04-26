@@ -21,7 +21,7 @@ func (r *statusResolver) Tasks(ctx context.Context, obj *model.Status) ([]model.
 	tasks := []model.Task{}
 	for rows.Next() {
 		var task model.Task
-		err := rows.Scan(&task.TaskID, &task.Title, &task.StatusID)
+		err := rows.Scan(&task.TaskID, &task.StatusID, &task.Title, &task.Position)
 		if err != nil {
 			return nil, err
 		}
