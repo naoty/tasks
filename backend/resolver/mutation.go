@@ -55,5 +55,88 @@ func (r *mutationResolver) DeleteTask(ctx context.Context, input gqlgen.DeleteTa
 }
 
 func (r *mutationResolver) MoveTask(ctx context.Context, input gqlgen.MoveTaskInput) (*gqlgen.MoveTaskPayload, error) {
-	return nil, nil
+	var err error
+
+	switch {
+	case input.FromStatusID == input.ToStatusID && input.FromPosition > input.ToPosition:
+		_, err = r.DB.NamedExec(`
+			UPDATE
+				tasks
+			SET
+				position = (CASE
+					WHEN position = :from THEN :to
+					WHEN position >= :to AND position < :from THEN position + 1
+					ELSE position
+					END)
+			WHERE
+				status_id = :status_id
+				AND position BETWEEN :to AND :from
+		`, map[string]interface{}{
+			"from":      input.FromPosition,
+			"to":        input.ToPosition,
+			"status_id": input.FromStatusID,
+		})
+	case input.FromStatusID == input.ToStatusID && input.FromPosition < input.ToPosition:
+		_, err = r.DB.NamedExec(`
+			UPDATE
+				tasks
+			SET
+				position = (CASE
+					WHEN position = :from THEN :to
+					WHEN position > :from AND position <= :to THEN position - 1
+					ELSE position
+					END)
+			WHERE
+				status_id = :status_id
+				AND position BETWEEN :from AND :to
+		`, map[string]interface{}{
+			"from":      input.FromPosition,
+			"to":        input.ToPosition,
+			"status_id": input.FromStatusID,
+		})
+	case input.FromStatusID != input.ToStatusID:
+		_, err = r.DB.Exec(
+			`UPDATE tasks SET position = position + 1 WHERE status_id = ? AND position >= ?`,
+			input.ToStatusID,
+			input.ToPosition,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = r.DB.NamedExec(`
+			UPDATE
+				tasks
+			SET
+				status_id = (CASE
+					WHEN position = :from_position THEN :to_status_id
+					ELSE status_id
+					END)
+				, position = (CASE
+					WHEN position > :from_position THEN position - 1
+					ELSE position
+					END)
+			WHERE
+				status_id = :from_status_id
+				AND position >= :from_position
+		`, map[string]interface{}{
+			"from_position":  input.FromPosition,
+			"to_position":    input.ToPosition,
+			"from_status_id": input.FromStatusID,
+			"to_status_id":   input.ToStatusID,
+		})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var task model.Task
+	err = r.DB.Get(
+		&task,
+		"SELECT * FROM tasks WHERE status_id = ? AND position = ?",
+		input.ToStatusID,
+		input.ToPosition,
+	)
+	return &gqlgen.MoveTaskPayload{ClientMutationID: input.ClientMutationID, Task: task}, err
 }
