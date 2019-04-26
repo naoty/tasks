@@ -12,26 +12,18 @@ type mutationResolver struct {
 }
 
 func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTaskInput) (*gqlgen.CreateTaskPayload, error) {
-	statusRows, err := r.DB.Query("SELECT status_id FROM statuses ORDER BY position ASC LIMIT 1")
+	initialStatus := model.Status{}
+	err := r.DB.Get(&initialStatus, "SELECT * FROM statuses ORDER BY position ASC LIMIT 1")
 	if err != nil {
 		return nil, err
 	}
 
-	defer statusRows.Close()
-
-	var initialStatusID int
-	statusRows.Next()
-	err = statusRows.Scan(&initialStatusID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = r.DB.Exec(`
+	_, err = r.DB.NamedExec(`
 		INSERT INTO
 			tasks (status_id, title, position)
 		SELECT
-			?
-			, ?
+			:status_id
+			, :title
 			, (CASE
 				WHEN MAX(position) IS NULL THEN 1
 				ELSE MAX(position) + 1
@@ -39,23 +31,17 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input gqlgen.CreateTa
 		FROM
 			tasks
 		WHERE
-			status_id = ?
-	`, initialStatusID, input.Title, initialStatusID)
+			status_id = :status_id
+	`, map[string]interface{}{
+		"status_id": initialStatus.StatusID,
+		"title":     input.Title,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	taskRows, err := r.DB.Query("SELECT * FROM tasks ORDER BY task_id DESC LIMIT 1")
-	if err != nil {
-		return nil, err
-	}
-
-	defer taskRows.Close()
-
-	var task model.Task
-	taskRows.Next()
-	err = taskRows.Scan(&task.TaskID, &task.StatusID, &task.Title, &task.Position)
-
+	task := model.Task{}
+	err = r.DB.Get(&task, "SELECT * FROM tasks ORDER BY task_id DESC LIMIT 1")
 	return &gqlgen.CreateTaskPayload{ClientMutationID: input.ClientMutationID, Task: task}, err
 }
 
