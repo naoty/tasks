@@ -67,3 +67,7 @@ func (r *mutationResolver) DeleteTask(ctx context.Context, input gqlgen.DeleteTa
 
 	return &gqlgen.DeleteTaskPayload{ClientMutationID: input.ClientMutationID}, nil
 }
+
+func (r *mutationResolver) MoveTask(ctx context.Context, input gqlgen.MoveTaskInput) (*gqlgen.MoveTaskPayload, error) {
+	return nil, nil
+}

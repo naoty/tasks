@@ -1,4 +1,5 @@
 type Mutation {
   createTask(input: CreateTaskInput!): CreateTaskPayload!
   deleteTask(input: DeleteTaskInput!): DeleteTaskPayload!
+  moveTask(input: MoveTaskInput!): MoveTaskPayload!
 }

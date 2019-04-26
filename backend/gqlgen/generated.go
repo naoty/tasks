@@ -53,9 +53,15 @@ type ComplexityRoot struct {
 		ClientMutationID func(childComplexity int) int
 	}
 
+	MoveTaskPayload struct {
+		ClientMutationID func(childComplexity int) int
+		Task             func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateTask func(childComplexity int, input CreateTaskInput) int
 		DeleteTask func(childComplexity int, input DeleteTaskInput) int
+		MoveTask   func(childComplexity int, input MoveTaskInput) int
 	}
 
 	Query struct {
@@ -80,6 +86,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateTask(ctx context.Context, input CreateTaskInput) (*CreateTaskPayload, error)
 	DeleteTask(ctx context.Context, input DeleteTaskInput) (*DeleteTaskPayload, error)
+	MoveTask(ctx context.Context, input MoveTaskInput) (*MoveTaskPayload, error)
 }
 type QueryResolver interface {
 	Statuses(ctx context.Context) ([]model.Status, error)
@@ -127,6 +134,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DeleteTaskPayload.ClientMutationID(childComplexity), true
 
+	case "MoveTaskPayload.ClientMutationID":
+		if e.complexity.MoveTaskPayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.MoveTaskPayload.ClientMutationID(childComplexity), true
+
+	case "MoveTaskPayload.Task":
+		if e.complexity.MoveTaskPayload.Task == nil {
+			break
+		}
+
+		return e.complexity.MoveTaskPayload.Task(childComplexity), true
+
 	case "Mutation.CreateTask":
 		if e.complexity.Mutation.CreateTask == nil {
 			break
@@ -150,6 +171,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteTask(childComplexity, args["input"].(DeleteTaskInput)), true
+
+	case "Mutation.MoveTask":
+		if e.complexity.Mutation.MoveTask == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_moveTask_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MoveTask(childComplexity, args["input"].(MoveTaskInput)), true
 
 	case "Query.Statuses":
 		if e.complexity.Query.Statuses == nil {
@@ -310,9 +343,23 @@ type DeleteTaskPayload {
   clientMutationId: String
 }
 `},
+	&ast.Source{Name: "../../graphql/move_task.graphql", Input: `input MoveTaskInput {
+  clientMutationId: String
+  fromPosition: Int!
+  toPosition: Int!
+  fromStatusId: ID!
+  toStatusId: ID!
+}
+
+type MoveTaskPayload {
+  clientMutationId: String
+  task: Task!
+}
+`},
 	&ast.Source{Name: "../../graphql/mutation.graphql", Input: `type Mutation {
   createTask(input: CreateTaskInput!): CreateTaskPayload!
   deleteTask(input: DeleteTaskInput!): DeleteTaskPayload!
+  moveTask(input: MoveTaskInput!): MoveTaskPayload!
 }
 `},
 	&ast.Source{Name: "../../graphql/query.graphql", Input: `type Query {
@@ -364,6 +411,20 @@ func (ec *executionContext) field_Mutation_deleteTask_args(ctx context.Context, 
 	var arg0 DeleteTaskInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNDeleteTaskInput2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐDeleteTaskInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_moveTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 MoveTaskInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNMoveTaskInput2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐMoveTaskInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -493,6 +554,57 @@ func (ec *executionContext) _DeleteTaskPayload_clientMutationId(ctx context.Cont
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _MoveTaskPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *MoveTaskPayload) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "MoveTaskPayload",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MoveTaskPayload_task(ctx context.Context, field graphql.CollectedField, obj *MoveTaskPayload) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "MoveTaskPayload",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Task, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Task)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTask2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐTask(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createTask(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -559,6 +671,40 @@ func (ec *executionContext) _Mutation_deleteTask(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNDeleteTaskPayload2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐDeleteTaskPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_moveTask(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_moveTask_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().MoveTask(rctx, args["input"].(MoveTaskInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*MoveTaskPayload)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNMoveTaskPayload2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐMoveTaskPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_statuses(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1738,6 +1884,48 @@ func (ec *executionContext) unmarshalInputDeleteTaskInput(ctx context.Context, v
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMoveTaskInput(ctx context.Context, v interface{}) (MoveTaskInput, error) {
+	var it MoveTaskInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "clientMutationId":
+			var err error
+			it.ClientMutationID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fromPosition":
+			var err error
+			it.FromPosition, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "toPosition":
+			var err error
+			it.ToPosition, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fromStatusId":
+			var err error
+			it.FromStatusID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "toStatusId":
+			var err error
+			it.ToStatusID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1799,6 +1987,35 @@ func (ec *executionContext) _DeleteTaskPayload(ctx context.Context, sel ast.Sele
 	return out
 }
 
+var moveTaskPayloadImplementors = []string{"MoveTaskPayload"}
+
+func (ec *executionContext) _MoveTaskPayload(ctx context.Context, sel ast.SelectionSet, obj *MoveTaskPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, moveTaskPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MoveTaskPayload")
+		case "clientMutationId":
+			out.Values[i] = ec._MoveTaskPayload_clientMutationId(ctx, field, obj)
+		case "task":
+			out.Values[i] = ec._MoveTaskPayload_task(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -1821,6 +2038,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteTask":
 			out.Values[i] = ec._Mutation_deleteTask(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "moveTask":
+			out.Values[i] = ec._Mutation_moveTask(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
@@ -2284,6 +2506,24 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalNMoveTaskInput2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐMoveTaskInput(ctx context.Context, v interface{}) (MoveTaskInput, error) {
+	return ec.unmarshalInputMoveTaskInput(ctx, v)
+}
+
+func (ec *executionContext) marshalNMoveTaskPayload2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐMoveTaskPayload(ctx context.Context, sel ast.SelectionSet, v MoveTaskPayload) graphql.Marshaler {
+	return ec._MoveTaskPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMoveTaskPayload2ᚖgithubᚗcomᚋnaotyᚋtasksᚋbackendᚋgqlgenᚐMoveTaskPayload(ctx context.Context, sel ast.SelectionSet, v *MoveTaskPayload) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._MoveTaskPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStatus2githubᚗcomᚋnaotyᚋtasksᚋbackendᚋmodelᚐStatus(ctx context.Context, sel ast.SelectionSet, v model.Status) graphql.Marshaler {

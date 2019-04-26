@@ -24,3 +24,16 @@ type DeleteTaskInput struct {
 type DeleteTaskPayload struct {
 	ClientMutationID *string `json:"clientMutationId"`
 }
+
+type MoveTaskInput struct {
+	ClientMutationID *string `json:"clientMutationId"`
+	FromPosition     int     `json:"fromPosition"`
+	ToPosition       int     `json:"toPosition"`
+	FromStatusID     string  `json:"fromStatusId"`
+	ToStatusID       string  `json:"toStatusId"`
+}
+
+type MoveTaskPayload struct {
+	ClientMutationID *string    `json:"clientMutationId"`
+	Task             model.Task `json:"task"`
+}

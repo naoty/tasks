@@ -11,6 +11,7 @@ schema:
   - ../../graphql/task.graphql
   - ../../graphql/create_task.graphql
   - ../../graphql/delete_task.graphql
+  - ../../graphql/move_task.graphql
 exec:
   filename: generated.go
 model:

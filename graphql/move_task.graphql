@@ -1,0 +1,12 @@
+input MoveTaskInput {
+  clientMutationId: String
+  fromPosition: Int!
+  toPosition: Int!
+  fromStatusId: ID!
+  toStatusId: ID!
+}
+
+type MoveTaskPayload {
+  clientMutationId: String
+  task: Task!
+}
