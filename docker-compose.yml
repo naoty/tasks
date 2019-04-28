@@ -22,4 +22,5 @@ services:
     image: mysql:8
     environment:
       LANG: C.UTF-8
+      MYSQL_DATABASE: tasks_development
       MYSQL_ROOT_PASSWORD: password
