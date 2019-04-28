@@ -1,0 +1,2 @@
+LOAD DATA INFILE '/seed/statuses.csv' INTO TABLE statuses FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+LOAD DATA INFILE '/seed/tasks.csv' INTO TABLE tasks FIELDS TERMINATED BY ',' ENCLOSED BY '"';

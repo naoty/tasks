@@ -19,7 +19,7 @@ services:
       - ./backend:/tasks/backend
       - ./graphql:/tasks/graphql
   database:
-    image: mysql:8
+    build: ./database
     environment:
       LANG: C.UTF-8
       MYSQL_DATABASE: tasks_development
